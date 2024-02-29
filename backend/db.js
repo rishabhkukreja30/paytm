@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+
 
 // Create a Schema for Users
 const userSchema = new mongoose.Schema({
@@ -29,6 +31,10 @@ const userSchema = new mongoose.Schema({
     maxLength: 50,
   },
 });
+
+userSchema.methods.createHash = async function (plainTextPassword) {
+  return await bcrypt.hash(plainTextPassword, 10);
+};
 
 // Create a model from the schema
 const User = mongoose.model("User", userSchema);

@@ -1,15 +1,20 @@
 const { Router } = require("express");
-const { signUpBody } = require("..types/");
+const { signUpBody } = require("../types");
 const { User } = require("../db");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config");
+const { log } = require("console");
 
 const router = Router();
 
+router.get("/signup", (req, res) => {
+  res.send("vhvhfvw");
+});
+
 router.post("/signup", async (req, res) => {
-  const { success } = userInfo.safeParse(req.body);
+  const { success } = signUpBody.safeParse(req.body);
   if (!success) {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Email already taken / Incorrect inputs",
     });
   }
@@ -19,23 +24,27 @@ router.post("/signup", async (req, res) => {
   });
 
   if (existingUser) {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Email already taken / Incorrect inputs",
     });
   }
 
-  const user = User.create({
+  const user = new User({
     username: req.body.username,
-    password: req.body.password,
     firstName: req.body.firstName,
     lastName: req.body.lastName,
   });
+
+  let hashedPassword = await user.createHash(req.body.password);
+  user.password = hashedPassword;
+
+  await user.save();
 
   const userId = user._id;
 
   const token = jwt.sign({ userId }, JWT_SECRET);
 
-  res.status(201).json({
+  return res.status(201).json({
     message: "User created successfully",
     token: token,
   });
