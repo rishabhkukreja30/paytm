@@ -1,15 +1,10 @@
 const { Router } = require("express");
-const { signUpBody } = require("../types");
+const { signUpBody, signInBody } = require("../types");
 const { User } = require("../db");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config");
-const { log } = require("console");
 
 const router = Router();
-
-router.get("/signup", (req, res) => {
-  res.send("vhvhfvw");
-});
 
 router.post("/signup", async (req, res) => {
   const { success } = signUpBody.safeParse(req.body);
@@ -48,6 +43,40 @@ router.post("/signup", async (req, res) => {
     message: "User created successfully",
     token: token,
   });
+});
+
+router.post("/signin", async (req, res) => {
+  const { success } = signInBody.safeParse(req.body);
+  if (!success) {
+    return res.status(400).json({
+      message: "Error while logging in",
+    });
+  }
+
+  const isUserPresent = await User.findOne({
+    username: req.body.username,
+  });
+
+  if (!isUserPresent) {
+    return res.status(400).json({
+      message: "User not found",
+    });
+  } else {
+    if (await isUserPresent.validatePassword(req.body.password)) {
+      console.log(await isUserPresent.validatePassword(req.body.password));
+      const userId = isUserPresent._id;
+
+      const token = jwt.sign({ userId }, JWT_SECRET);
+
+      return res.status(200).json({
+        token: token,
+      });
+    } else {
+      return res.status(400).json({
+        message: "Incorrect Password",
+      });
+    }
+  }
 });
 
 module.exports = router;

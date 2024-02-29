@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
 
+
 // Create a Schema for Users
 const userSchema = new mongoose.Schema({
   username: {
@@ -34,6 +35,10 @@ const userSchema = new mongoose.Schema({
 
 userSchema.methods.createHash = async function (plainTextPassword) {
   return await bcrypt.hash(plainTextPassword, 10);
+};
+
+userSchema.methods.validatePassword = async function (plainTextPassword) {
+  return await bcrypt.compare(plainTextPassword, this.password);
 };
 
 // Create a model from the schema
