@@ -30,7 +30,7 @@ router.post("/signup", async (req, res) => {
     lastName: req.body.lastName,
   });
 
-  let hashedPassword = await user.createHash(req.body.password);
+  const hashedPassword = await user.createHash(req.body.password);
   user.password = hashedPassword;
 
   await user.save();
@@ -63,7 +63,6 @@ router.post("/signin", async (req, res) => {
     });
   } else {
     if (await isUserPresent.validatePassword(req.body.password)) {
-      console.log(await isUserPresent.validatePassword(req.body.password));
       const userId = isUserPresent._id;
 
       const token = jwt.sign({ userId }, JWT_SECRET);
