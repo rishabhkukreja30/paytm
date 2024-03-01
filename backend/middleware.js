@@ -5,11 +5,13 @@ function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     res.status(403).json({
-      message: "Inavlid Credentials",
+      message: "User not authorized",
     });
   }
 
-  const token = token.split(" ")[1];
+  const token = authHeader.split(" ")[1];
+  console.log("authHeader", authHeader);
+  console.log("Token", token);
 
   try {
     const decodedToken = jwt.verify(token, JWT_SECRET);

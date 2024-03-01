@@ -1,8 +1,9 @@
 const { Router } = require("express");
-const { signUpBody, signInBody } = require("../types");
+const { signUpBody, signInBody, updateUserBody } = require("../types");
 const { User } = require("../db");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config");
+const { authMiddleware } = require("../middleware");
 
 const router = Router();
 
@@ -76,6 +77,78 @@ router.post("/signin", async (req, res) => {
       });
     }
   }
+});
+
+router.put("/", authMiddleware, async (req, res) => {
+  const { success } = updateUserBody.safeParse(req.body);
+  if (!success) {
+    return res.status(400).json({
+      message: "Error while updating information",
+    });
+  }
+
+  try {
+    const user = await User.findOne({ _id: req.userId });
+    // const isPasswordSame = await user.validatePassword(req.body.password);
+    if (
+      (req.body.password && (await user.validatePassword(req.body.password))) ||
+      req.body.firstName === user.firstName ||
+      req.body.lastName === user.lastName
+    ) {
+      return res.status(403).json({
+        message: "New credentials are same as current credentials",
+      });
+    }
+    const updatedFields = {};
+
+    if (req.body.password) {
+      const hashedPassword = await user.createHash(req.body.password);
+      updatedFields.password = hashedPassword;
+    }
+    if (req.body.firstName) {
+      updatedFields.firstName = req.body.firstName;
+    }
+    if (req.body.lastName) {
+      updatedFields.lastName = req.body.lastName;
+    }
+    await User.updateOne({ _id: req.userId }, updatedFields);
+
+    return res.status(200).json({
+      message: "User Profile Updated",
+    });
+  } catch (error) {
+    return res.status(403).json({
+      message: "Profile can't be updated",
+    });
+  }
+});
+
+router.get("/search", async (req, res) => {
+  const name = req.query.name || "";
+
+  const users = await User.find({
+    $or: [
+      {
+        firstName: {
+          $regex: new RegExp(name, "i"),
+        },
+      },
+      {
+        lastName: {
+          $regex: new RegExp(name, "i"),
+        },
+      },
+    ],
+  });
+
+  res.json({
+    users: users.map((user) => ({
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      _id: user._id,
+    })),
+  });
 });
 
 module.exports = router;
