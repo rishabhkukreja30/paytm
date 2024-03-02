@@ -10,9 +10,6 @@ function authMiddleware(req, res, next) {
   }
 
   const token = authHeader.split(" ")[1];
-  console.log("authHeader", authHeader);
-  console.log("Token", token);
-
   try {
     const decodedToken = jwt.verify(token, JWT_SECRET);
     if (decodedToken.userId) {
