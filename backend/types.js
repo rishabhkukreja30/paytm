@@ -18,8 +18,14 @@ const updateUserBody = zod.object({
   lastName: zod.string().optional(),
 });
 
+const transferMoney = zod.object({
+  to: zod.string(),
+  amount: zod.number(),
+});
+
 module.exports = {
   signUpBody,
   signInBody,
   updateUserBody,
+  transferMoney,
 };
