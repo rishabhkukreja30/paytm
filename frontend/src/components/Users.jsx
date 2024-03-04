@@ -1,15 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "./Button";
+import axios from "axios";
 
 const Users = () => {
   // Replace with backend call
-  const [users, setUsers] = useState([
-    {
-      firstName: "Rishabh",
-      lastName: "Kukreja",
-      _id: 1,
-    },
-  ]);
+  const [users, setUsers] = useState([]);
+  const [filter, setFilter] = useState("");
+
+  useEffect(() => {
+    axios
+      .get(`http://localhost:3000/api/v1/users/search?name=${filter}`)
+      .then((response) => {
+        console.log(response.data.users);
+        setUsers(response.data.users);
+      });
+  }, [filter]);
 
   return (
     <>
@@ -19,6 +24,9 @@ const Users = () => {
           type="text"
           placeholder="Search users..."
           className="w-full px-2 py-1 border rounded border-slate-200"
+          onChange={(e) => {
+            setFilter(e.target.value);
+          }}
         ></input>
       </div>
       <div>

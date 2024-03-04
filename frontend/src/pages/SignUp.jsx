@@ -49,13 +49,17 @@ const SignUp = () => {
           <div className="pt-4">
             <Button
               label={"Sign up"}
-              onClick={() => {
-                axios.post("http://localhost:3000/api/v1/users/signup", {
-                  firstName,
-                  lastName,
-                  username,
-                  password,
-                });
+              onClick={async () => {
+                const response = await axios.post(
+                  "http://localhost:3000/api/v1/users/signup",
+                  {
+                    firstName,
+                    lastName,
+                    username,
+                    password,
+                  }
+                );
+                localStorage.setItem("token", response.data.token);
               }}
             />
           </div>
